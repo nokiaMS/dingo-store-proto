@@ -603,6 +603,41 @@ message TxnGetResponse {
   // bool not_found = 10;
 }
 
+// Type of CoprocessorRequest and CoprocessorResponse.
+enum TxnCoprocessorType {
+  NONE      = 0;
+  COP_AGG_COUNT_WITHOUT_FILTER_PROJECT  = 1;
+};
+
+// TxnCoprocessorRequest pushdown plan tree from executor to store.
+message TxnCoprocessorRequest {
+  dingodb.pb.common.RequestInfo request_info = 1;
+  Context context = 2;
+
+  //pushdown type.
+  TxnCoprocessorType cop_type = 3;
+
+  // coprocessor
+  dingodb.pb.common.CoprocessorV2 coprocessor = 4;
+
+  //scan request.
+  dingodb.pb.store.TxnScanRequest txn_scan_request = 5;
+}
+
+// TxnCoprocessorResponse contains response of TxnCoprocessorRequest from store.
+message TxnCoprocessorResponse {
+  // response info
+  dingodb.pb.common.ResponseInfo response_info = 1;
+  // error code
+  dingodb.pb.error.Error error = 2;
+
+  //pushdown response type.
+  TxnCoprocessorType cop_type = 3;
+
+  //scan response.
+  dingodb.pb.store.TxnScanResponse txn_scan_response = 4;
+}
+
 // TxnScan fetches values for a range of keys in the transaction with start_ts.
 message TxnScanRequest {
   dingodb.pb.common.RequestInfo request_info = 1;
@@ -1381,6 +1416,7 @@ service StoreService {
   rpc TxnGet(TxnGetRequest) returns (TxnGetResponse);
   rpc TxnBatchGet(TxnBatchGetRequest) returns (TxnBatchGetResponse);
   rpc TxnScan(TxnScanRequest) returns (TxnScanResponse);
+  rpc TxnCoprocessor(TxnCoprocessorRequest) returns (TxnCoprocessorResponse);
   rpc TxnDump(TxnDumpRequest) returns (TxnDumpResponse);
 
   rpc TxnPessimisticLock(TxnPessimisticLockRequest) returns (TxnPessimisticLockResponse);
